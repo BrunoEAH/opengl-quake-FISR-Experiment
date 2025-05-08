@@ -232,7 +232,7 @@ bool World::InitializeTextures(void)
 		// Create mipmaps from the created texture
 		gluBuild2DMipmaps(GL_TEXTURE_2D, 4, width, height, GL_RGBA, GL_UNSIGNED_BYTE, texture);
 
-		delete texture;
+		delete[] texture;
 	}
 
 	return true;

@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 	int parameters = ParseArguments(argc, argv, FULLSCREEN);
 
 	// Load map
-	if (!map.Initialize("assets/start.bsp", "assets/palette.lmp")) {
+	if (!map.Initialize("../assets/start.bsp", "../assets/palette.lmp")) {
 		printf("[ERROR] Quake::main() Unable to initialize map\n");
 		return -1;
 	}
