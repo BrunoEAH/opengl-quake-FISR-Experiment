@@ -4,9 +4,15 @@
 // Author: Johan Gardhage <johan.gardhage@gmail.com>
 //
 #include <GL/glu.h>
+#include <cstring>
 #include <string.h> // strncmp
 #include "World.h"
 #include "Camera.h"
+#include <cmath>
+#include <cstdint>
+#include<bits/stdc++.h>     // std::bit_cast (C++20)
+
+using namespace std; 
 
 //
 // Initialize World
@@ -291,10 +297,45 @@ bool World::InitializeSurfaces(void)
 	return true;
 }
 
-//
+// Original function
 // Return the dotproduct of two vectors
 //
-float World::CalculateDistance(vec3_t a, vec3_t b)
-{
-	return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]); 
+// float World::CalculateDistance(vec3_t a, vec3_t b)
+// {
+// 	return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]); 
+// }
+
+float World::Q_rsqrt(float number) {
+
+    const float threehalfs = 1.5F;
+    float x2 = number * 0.5F;
+    float y  = number;
+
+    // Punning seguro com memcpy
+    uint32_t i;
+    std::memcpy(&i, &y, sizeof(i));                // float → uint32_t 
+    i = 0x5f3759dfu - (i >> 1);                     // “magic constant”
+    std::memcpy(&y, &i, sizeof(y));                // uint32_t → float
+
+    y = y * (threehalfs - (x2 * y * y));           // Newton–Raphson step 
+    return y;
+
+}
+
+
+
+float World::CalculateDistance(vec3_t a, vec3_t b){
+
+    // dot(a,a)
+	float len2 = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+    
+    float invLen = useFISR
+        ? Q_rsqrt(len2)                             // FISR 
+        : 1.0f / std::sqrt(len2);                   // traditional 
+
+    // normaliza a
+    vec3_t na = { a[0]*invLen, a[1]*invLen, a[2]*invLen };
+    // dot(normalized a, b)
+    return na[0]*b[0] + na[1]*b[1] + na[2]*b[2];
+
 }

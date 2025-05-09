@@ -9,6 +9,8 @@
 #include "Map.h"
 #include "Camera.h"
 
+extern bool useFISR; //global flag
+
 class World
 {
 private:
@@ -26,6 +28,7 @@ private:
 	void DrawLeafVisibleSet(bspleaf_t *pLeaf);
 	bool InitializeSurfaces(void);
 	bool InitializeTextures(void);
+	float Q_rsqrt(float number);
 
 public:
 	World() {

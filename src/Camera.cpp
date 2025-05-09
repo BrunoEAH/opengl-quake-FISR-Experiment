@@ -3,9 +3,12 @@
 //
 // Author: Johan Gardhage <johan.gardhage@gmail.com>
 //
+
+#define _USE_MATH_DEFINES
 #include <math.h> // cos, sin, fabs, M_PI
 #include "Camera.h"
 
+#define _USE_MATH_DEFINES
 #define WALKING_SPEED		5.0
 #define TURN_SPEED			3.0
 #define PITCH_SPEED			1.0

@@ -8,6 +8,11 @@
 #include "Map.h"
 #include "World.h"
 #include "Camera.h"
+#include <libgen.h>
+#include<stdio.h>
+
+bool useFISR = false;
+bool fKeyPressed = false;
 
 enum Parameters
 {
@@ -203,6 +208,13 @@ int main(int argc, char *argv[])
 		if (keys[SDL_GetScancodeFromKey(SDLK_d)]) {
 			camera.StrafeRight();
 		}
+		if (keys[SDL_GetScancodeFromKey(SDLK_f)]){
+			if(!fKeyPressed){
+			useFISR = !useFISR;
+			fKeyPressed = true;
+			printf("FISR is now %s\n", useFISR ? "ON" : "OFF"); 
+			}
+		}
 		if (keys[SDL_GetScancodeFromKey(SDLK_a)]) {
 			camera.StrafeLeft();
 		}
@@ -238,4 +250,6 @@ int main(int argc, char *argv[])
 
 	// Shutdown SDL
 	SDL_Quit();
+
+	return 0;
 }

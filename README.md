@@ -1,6 +1,8 @@
 # opengl-quake
 
-A simple Quake map viewer in OpenGL.
+A simple Quake map viewer in OpenGL originally made by Johan Gardhage and further improved by Bruno Hayek.
+
+The main goal for this fork is render the Quake map viewer using the Fast Inverse Square Root and a traditional calculation method. We have further improved the building file so that it also generates a executable for Windows and we also made adaptations to C++20.
 
 ![Screenshot](/screenshots/quake.png "quake")
 
@@ -11,6 +13,7 @@ To build opengl-quake, you must first install the following tools:
 - [SDL 2.0.4](https://www.libsdl.org/download-2.0.php) (or later)
 - [GLU](https://en.wikipedia.org/wiki/OpenGL_Utility_Library)
 - [Ninja 1.5](https://ninja-build.org/) (or later)
+- C++20
 
 ### Install dependencies
 
@@ -51,3 +54,4 @@ Licensed under MIT license. See [LICENSE](LICENSE) for more information.
 ## Authors
 
 * Johan Gardhage
+* Bruno Hayek

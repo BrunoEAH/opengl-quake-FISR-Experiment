@@ -1,15 +1,28 @@
 ninja_required_version = 1.5
 
-cc = g++
-cflags = -Wall -s -march=native `sdl2-config --cflags`
+cc_linux = g++
+cc_win = x86_64-w64-mingw32-g++
+
+cflags = -Wall -s -march=native -std=c++20 `sdl2-config --cflags`
 libs = `sdl2-config --libs` `pkg-config --libs glu`
+
+# Windows SDL2/GLU flags — adjust path if needed
+cflags_win = -Wall -s -march=native -std=c++20  -I/usr/x86_64-w64-mingw32/include/SDL2 -I/usr/x86_64-w64-mingw32/include/SDL2
+libs_win = -lmingw32 -lSDL2main -lSDL2 -lopengl32 -lglu32
+
 builddir = build
 srcdir = src
 
-rule cc
-  command = $cc $cflags $in $libs -o $out
-  description = Building executable $out
+rule cc_linux
+  command = $cc_linux $cflags $in $libs -o $out
+  description = Building Linux executable $out
 
-build $builddir/quake: cc $srcdir/Quake.cpp $srcdir/World.cpp $srcdir/Map.cpp $srcdir/Camera.cpp
+rule cc_win
+  command = $cc_win $cflags_win $in $libs_win -o $out
+  description = Building Windows executable $out
+
+build $builddir/quake: cc_linux $srcdir/Quake.cpp $srcdir/World.cpp $srcdir/Map.cpp $srcdir/Camera.cpp
+build $builddir/quake.exe: cc_win $srcdir/Quake.cpp $srcdir/World.cpp $srcdir/Map.cpp $srcdir/Camera.cpp
 
 build quake: phony $builddir/quake
+build quake.exe: phony $builddir/quake.exe
