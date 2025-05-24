@@ -7,10 +7,13 @@
 #define _MAP_H_
 
 #include <stdlib.h> // free
+#include <cstdint>
 
 #define BSP_VERSION		29
 #define MAXLIGHTMAPS	4
 #define ANIM_TEX_FRAMES	32
+
+
 
 // BSP entries
 struct dentry_t

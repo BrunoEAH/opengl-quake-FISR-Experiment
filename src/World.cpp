@@ -4,15 +4,32 @@
 // Author: Johan Gardhage <johan.gardhage@gmail.com>
 //
 #include <GL/glu.h>
+#include <cstdint>
+#include <chrono>
 #include <cstring>
 #include <string.h> // strncmp
 #include "World.h"
 #include "Camera.h"
 #include <cmath>
+#include <SDL2/SDL.h>
 #include <cstdint>
+#include <sstream>
+#include <ios>
 #include<bits/stdc++.h>     // std::bit_cast (C++20)
 
 using namespace std; 
+
+uint64_t countStd = 0;
+
+// At the top of your file, add these global variables:
+float fisr_time = 0.0f;  // Current FISR timing
+float slow_time = 0.0f;  // Current slow timing
+
+// Running averages for smoother display
+float fisr_avg = 0.0f;
+float slow_avg = 0.0f;
+const float SMOOTHING_FACTOR = 0.1f; // How quickly to update the average
+
 
 //
 // Initialize World
@@ -55,7 +72,7 @@ bool World::Initialize(Map *map, int width, int height)
 void World::DrawScene(Camera *camera)
 {
 	// Clear the drawbuffer
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Setup a viewing matrix and transformation
 	glMatrixMode(GL_MODELVIEW);
@@ -294,7 +311,7 @@ bool World::InitializeSurfaces(void)
 		}
 	}
 
-	return true;
+	return true;	
 }
 
 // Original function
@@ -304,6 +321,42 @@ bool World::InitializeSurfaces(void)
 // {
 // 	return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]); 
 // }
+
+
+// Slow method: Taylor series approximation
+// Método lento de aproximação utilizando as séries de Taylor
+// sqrt(x) ≈ sqrt(a) + (x-a)/(2*sqrt(a)) - (x-a)^2/(8*a^(3/2)) + ...
+
+float World::very_slow_rsqrt(float number) {
+
+	if(number <= 0 ) return 0.0f;
+	float x = number;
+	float result = 1.0f;
+	float term = x - 1.0f; // (x-a)
+
+	// Add many Taylor series terms - Várias séries de Taylor
+    for (int i = 1; i <= 20; i++) {
+        float coefficient = 1.0f;
+        float power = term;
+        
+        // Calculate coefficient for each term
+		// Coeficiente para cada termo
+        for (int j = 1; j <= i; j++) {
+            if (j == 1) {
+                coefficient *= 0.5f; // 1/(2*sqrt(a)) where a=1
+            } else {
+                coefficient *= -(2*j - 3) / (2.0f * j);
+            }
+            if (j > 1) power *= term;
+        }
+        
+        result += coefficient * power;
+        
+    }
+    
+    return 1.0f / result; 
+
+}
 
 float World::Q_rsqrt(float number) {
 
@@ -323,17 +376,47 @@ float World::Q_rsqrt(float number) {
 }
 
 
-
 float World::CalculateDistance(vec3_t a, vec3_t b){
 
     // dot(a,a)
 	float len2 = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
     
-    float invLen = useFISR
-        ? Q_rsqrt(len2)                             // FISR 
-        : 1.0f / std::sqrt(len2);                   // traditional 
+	float invLen;
 
-    // normaliza a
+ 	if (useFISR) {
+        auto start = std::chrono::high_resolution_clock::now();
+        invLen = Q_rsqrt(len2);
+        auto end = std::chrono::high_resolution_clock::now();
+ 		float current_time = std::chrono::duration<float, std::micro>(end - start).count();    
+
+		fisr_avg = fisr_avg * (1.0f - SMOOTHING_FACTOR) + current_time * SMOOTHING_FACTOR;
+        fisr_time = fisr_avg;
+
+	}
+
+	//Traditional method : using 1/sqrt()
+	else if (useTraditional){
+		auto start = std::chrono::high_resolution_clock::now();
+		invLen = 1.0f / std::sqrt(len2);
+		auto end   = std::chrono::high_resolution_clock::now();
+		float current_time = std::chrono::duration<float, micro>(end - start).count();
+		slow_avg = slow_avg * (1 - SMOOTHING_FACTOR) + current_time * SMOOTHING_FACTOR;
+		slow_time = slow_avg;
+	}
+
+
+	else {
+        auto start = std::chrono::high_resolution_clock::now();
+        invLen = very_slow_rsqrt(len2);
+        auto end = std::chrono::high_resolution_clock::now();
+        float current_time = std::chrono::duration<float, std::micro>(end - start).count();
+	
+		slow_avg = slow_avg * (1.0f - SMOOTHING_FACTOR) + current_time * SMOOTHING_FACTOR;
+        slow_time = slow_avg;
+	
+	}
+
+    // normalize a
     vec3_t na = { a[0]*invLen, a[1]*invLen, a[2]*invLen };
     // dot(normalized a, b)
     return na[0]*b[0] + na[1]*b[1] + na[2]*b[2];

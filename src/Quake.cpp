@@ -4,15 +4,27 @@
 // Author: Johan Gardhage <johan.gardhage@gmail.com>
 //
 #include <SDL2/SDL.h>
+#include <iomanip>
+#include "imgui.h"
+#include <cstdint>
 #include <getopt.h> // getopt_long
 #include "Map.h"
 #include "World.h"
 #include "Camera.h"
+#include <sstream>
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl3.h"
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <libgen.h>
 #include<stdio.h>
 
+
 bool useFISR = false;
 bool fKeyPressed = false;
+bool useTraditional = false;
+bool tKeyPressed = false;
+
 
 enum Parameters
 {
@@ -21,6 +33,24 @@ enum Parameters
 	FULLSCREEN = 4,
 	SHOWCURSOR = 8
 };
+
+/* void RenderBenchmarks(float fisr_time, float slow_time) {
+    // Debug: Print what we're trying to render
+    static int debug_counter = 0;
+    if (debug_counter++ % 60 == 0) { // Print every 60 frames (about 1 second at 60fps)
+        printf("[DEBUG] RenderBenchmarks called with fisr_time=%.2f, slow_time=%.2f\n", fisr_time, slow_time);
+    }
+
+    // Always show some text, even if timing is 0
+    std::ostringstream oss;
+    if (fisr_time == 0.0f && slow_time == 0.0f) {
+        oss << "DEBUG: Benchmarks not running (F to toggle FISR: " << (useFISR ? "ON" : "OFF") << ")";
+    } else {
+        oss << std::fixed << std::setprecision(2)
+            << "FISR: " << fisr_time << "us  Slow: " << slow_time << "us";
+    }
+
+} */
 
 int ParseArguments(int argc, char *argv[], int param)
 {
@@ -87,6 +117,8 @@ int ParseArguments(int argc, char *argv[], int param)
 		printf(" -f, --fullscreen   Render in fullscreen\n");
 		printf(" -c, --showcursor   Show mouse cursor\n");
 		printf("     --nocursor     Hide mouse cursor\n");
+		printf("Press F to turn on the FISR algorithm\n");
+		printf("Press T to turn on the traditional algorithm\n");
 		exit(1);
 	}
 	return parameters;
@@ -120,8 +152,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	if (parameters & WINDOW) {
-		dm.w = 320;
-		dm.h = 200;
+		dm.w = 800;
+		dm.h = 600;
 	}
 
 	// Cursor and mouse mode
@@ -161,6 +193,17 @@ int main(int argc, char *argv[])
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetSwapInterval(1);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplSDL2_InitForOpenGL(window, context);
+	ImGui_ImplOpenGL3_Init("#version 150");
+
+
 
 	// Initialize world
 	if (!world.Initialize(&map, dm.w, dm.h)) {
@@ -209,12 +252,29 @@ int main(int argc, char *argv[])
 			camera.StrafeRight();
 		}
 		if (keys[SDL_GetScancodeFromKey(SDLK_f)]){
-			if(!fKeyPressed){
-			useFISR = !useFISR;
-			fKeyPressed = true;
-			printf("FISR is now %s\n", useFISR ? "ON" : "OFF"); 
+			if (!fKeyPressed){
+				useFISR = !useFISR;
+				fKeyPressed = true;
+				printf("[DEBUG] FISR: %s\n", useFISR ? "ON" : "OFF");
 			}
+
 		}
+
+		else {
+			fKeyPressed = false;
+		}
+
+		if (keys[SDL_GetScancodeFromKey(SDLK_t)]) {
+    		if (!tKeyPressed) {
+        		useTraditional = !useTraditional;
+        		tKeyPressed    = true;
+        		printf("[DEBUG] Traditional 1/sqrt: %s\n", useTraditional ? "ON" : "OFF");}
+		} 
+
+		else {
+			tKeyPressed = false;
+		}
+
 		if (keys[SDL_GetScancodeFromKey(SDLK_a)]) {
 			camera.StrafeLeft();
 		}
@@ -228,6 +288,7 @@ int main(int argc, char *argv[])
 		// Handle mouse events
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
+			ImGui_ImplSDL2_ProcessEvent(&event);  
 			if (event.type == SDL_MOUSEMOTION) {
 				camera.Yaw(event.motion.xrel);
 				camera.Pitch(event.motion.yrel);
@@ -237,8 +298,39 @@ int main(int argc, char *argv[])
 		// Update camera position
 		camera.UpdatePosition();
 
+		//printf("Drawing scene...\n");
+		
 		// Draw the scene
 		world.DrawScene(&camera);
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame();
+		ImGui::NewFrame();
+
+
+		{
+		ImGui::Begin("Benchmark Stats");
+		ImGui::Text("FISR:  %.2f µs", ::fisr_time);
+
+		if (useTraditional)
+			ImGui::Text("Trad:  %.2f µs", ::slow_time);
+
+		else
+			ImGui::Text("Slow:  %.2f µs", ::slow_time);
+
+		ImGui::Separator();
+		ImGui::Text("Press F to toggle FISR: %s", useFISR ? "ON" : "OFF");
+		ImGui::Text("Press T to toggle Traditional: %s", useTraditional ? "ON" : "OFF");
+
+		ImGui::End();
+		}
+
+
+		//printf("Scene drawn.\n");
+		
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		SDL_GL_SwapWindow(window);
 	}
 
@@ -247,6 +339,12 @@ int main(int argc, char *argv[])
 
 	// Destroy our window
 	SDL_DestroyWindow(window);
+
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+	ImGui::DestroyContext();
+
 
 	// Shutdown SDL
 	SDL_Quit();

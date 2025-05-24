@@ -11,6 +11,11 @@
 
 extern bool useFISR; //global flag
 
+extern bool useTraditional;
+
+extern float fisr_time;
+extern float slow_time;
+
 class World
 {
 private:
@@ -29,6 +34,7 @@ private:
 	bool InitializeSurfaces(void);
 	bool InitializeTextures(void);
 	float Q_rsqrt(float number);
+	float very_slow_rsqrt(float number);
 
 public:
 	World() {
