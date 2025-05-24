@@ -18,6 +18,8 @@ To build opengl-quake, you must first install the following tools:
 - [Ninja 1.5](https://ninja-build.org/) (or later)
 - C++20
 
+We also used ImGUI (https://github.com/ocornut/imgui), but its files are located in the third_party folder.
+
 ### Install dependencies
 
 #### openSUSE
