@@ -6,6 +6,9 @@ The main goal for this fork is to render the Quake map viewer using the Fast Inv
 
 ![Screenshot](/screenshots/quake.png "quake")
 
+![GIF](/screenshots/lv_0_20250524193135.gif "quake")
+
+
 ## Prerequisites
 
 To build opengl-quake, you must first install the following tools:
