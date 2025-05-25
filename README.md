@@ -1,26 +1,28 @@
 # opengl-quake
 
-A simple Quake map viewer in OpenGL originally made by Johan Gardhage and further improved by Bruno Hayek.
+Um visualizador simples de mapas do Quake em OpenGL, originalmente criado por Johan Gardhage e posteriormente aprimorado por Bruno Hayek.
 
-The main goal for this fork is to render the Quake map viewer using the Fast Inverse Square Root, a traditional calculation method or a Taylor series approximation. More details are give in the following repository: https://github.com/BrunoEAH/FISR-3D-Rendering. We have further improved the building file so that it also generates a executable for Windows. In the end, we adapted the code to C++20 and also added a window to see the benchmark for each calculation method.
+O principal objetivo deste fork é renderizar o visualizador de mapas do Quake utilizando o Fast Inverse Square Root, um método de cálculo tradicional ou uma aproximação por série de Taylor. Mais detalhes estão disponíveis no seguinte repositório: [https://github.com/BrunoEAH/FISR-3D-Rendering](https://github.com/BrunoEAH/FISR-3D-Rendering). Também aprimoramos o arquivo de build para que ele gere um executável para Windows. Por fim, adaptamos o código para C++20 e adicionamos uma janela para visualizar o benchmark de cada método de cálculo.
+
 
 ![Screenshot](/screenshots/quake.png "quake")
 
 ![GIF](/screenshots/lv_0_20250524193135.gif "quake")
 
 
-## Prerequisites
+## Pré-requisitos
 
-To build opengl-quake, you must first install the following tools:
+Para compilar o opengl-quake, você deve primeiro instalar as seguintes ferramentas:
 
 - [SDL 2.0.4](https://www.libsdl.org/download-2.0.php) (or later)
 - [GLU](https://en.wikipedia.org/wiki/OpenGL_Utility_Library)
 - [Ninja 1.5](https://ninja-build.org/) (or later)
 - C++20
 
-We also used ImGUI (https://github.com/ocornut/imgui), but its files are located in the third_party folder.
+Também utilizamos o ImGUI ([https://github.com/ocornut/imgui](https://github.com/ocornut/imgui)), mas seus arquivos estão localizados na pasta third\_party.
 
-### Install dependencies
+
+### Instalar dependências
 
 #### openSUSE
 
@@ -30,35 +32,36 @@ We also used ImGUI (https://github.com/ocornut/imgui), but its files are located
 
 `$ sudo apt install ninja-build g++ libsdl2-dev libglu1-mesa-dev`
 
-## Build instructions
+## Instruções de compilação
 
-To build the quake demo program, run:
+Para compilar o programa de demonstração do Quake, execute:
 
 `$ ninja`
 
-A `build` directory will be created, containing the demo program.
+Um diretório `build` será criado, contendo o programa de demonstração.
 
-## Usage
+## Uso
 
 ```
-Usage: quake [OPTION]...
+Uso: quake [OPÇÃO]...
 
-Options:
- -h, --help         Display this text and exit
- -w, --window       Render in a window
-     --fullwindow   Render in a fullscreen window
- -f, --fullscreen   Render in fullscreen
- -c, --showcursor   Show mouse cursor
-     --nocursor     Hide mouse cursor
-Press F to turn on the FISR algorithm
-Press T to turn on the traditional algorithm
+Opções:
+ -h, --help         Exibe este texto e sai
+ -w, --window       Renderiza em uma janela
+     --fullwindow   Renderiza em uma janela em tela cheia
+ -f, --fullscreen   Renderiza em tela cheia
+ -c, --showcursor   Mostra o cursor do mouse
+     --nocursor     Esconde o cursor do mouse
+Pressione F para ativar o algoritmo FISR
+Pressione T para ativar o algoritmo tradicional
 ```
 
-## License
 
-Licensed under MIT license. See [LICENSE](LICENSE) for more information.
+## Licença
 
-## Authors
+Licenciado sob a licença MIT. Veja [LICENSE](LICENSE) para mais informações.
+
+## Autores
 
 * Johan Gardhage
 * Bruno Hayek
